@@ -66,6 +66,7 @@ class TestLogger(object):
                 logger.exception("some exception")
 
         assert handler.record.var1 == 1337
+        assert handler.record.exc_info is not None
 
     def test_rollback(self):
         logger = logging.getLogger("root.test_rollback")
