@@ -85,3 +85,14 @@ class TestLogger(object):
 
         test()
         assert handler.record.var1 == 1
+
+    def test_as_method(self):
+        logger = logging.getLogger("root.test_as_method")
+
+        context = logger.bind_extra_enter(var1=1)
+        logger.info("some msg")
+        assert handler.record.var1 == 1
+
+        context.exit()
+        logger.info("some msg")
+        assert not hasattr(handler.record, 'var1')

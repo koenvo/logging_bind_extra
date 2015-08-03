@@ -15,17 +15,25 @@ _local = ThreadLocal()
 class BindExtraManager(object):
     def __init__(self, **kwargs):
         self.extra = kwargs
+        self.saved_extra = {}
 
-    def __enter__(self):
+    def enter(self):
         if not hasattr(_local, 'extra_binds'):
             _local.extra_binds = {}
 
         self.saved_extra = deepcopy(_local.extra_binds)
         update_dict(_local.extra_binds, self.extra)
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
+    def exit(self):
         _local.extra_binds.clear()
         _local.extra_binds.update(self.saved_extra)
+
+    def __enter__(self):
+        self.enter()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.exit()
 
     def __call__(self, f):
         @wraps(f)
@@ -48,3 +56,9 @@ class BindExtraLogger(BaseLogger):
     @staticmethod
     def bind_extra(**kwargs):
         return BindExtraManager(**kwargs)
+
+    @staticmethod
+    def bind_extra_enter(**kwargs):
+        helper = BindExtraManager(**kwargs)
+        helper.enter()
+        return helper
